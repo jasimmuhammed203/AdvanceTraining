@@ -1,0 +1,68 @@
+class Codec:
+    def encode(self, strs):
+        result = ""
+        for word in strs:
+            result += str(len(word)) + "#" + word
+        return result
+
+    def decode(self, s):
+        decoded = []
+        i = 0
+        while i < len(s):
+            j = i
+            while j < len(s) and s[j] != '#':
+                j += 1
+            if j == len(s):
+                print("Corruption detected (missing #)")
+                return decoded, False
+
+            length_str = s[i:j]
+            if not length_str.isdigit():
+                print("Corruption detected (length not number)")
+                return decoded, False
+
+            length = int(length_str)
+            start = j + 1
+            end = start + length
+
+            if end > len(s):
+                print("Corruption detected (not enough chars)")
+                return decoded, False
+
+            decoded.append(s[start:end])
+            i = end
+        return decoded, True
+
+
+def transmit_and_decode(codec, original_list, transmissions):
+    for t in transmissions:
+        print("Received:", t)
+        decoded, ok = codec.decode(t)
+        if ok:
+            print("Final Output:", decoded)
+            return decoded
+        else:
+            print("Partial decoded:", decoded)
+            print("Requesting resend...")
+    print("No valid transmission received.")
+    return None
+
+
+if __name__ == "__main__":
+    codec = Codec()
+    data = ["leet", "code", "love", "you"]
+    encoded = codec.encode(data)
+    print("Original encode:", encoded)
+
+    transmissions = [
+        "4#leet3#cod@4#you",
+        "4#leet4#code4#love3#you"
+    ]
+    transmit_and_decode(codec, data, transmissions)
+
+    print()
+    data2 = ["we", "say", ":", "yes"]
+    encoded2 = codec.encode(data2)
+    print("Original encode:", encoded2)
+    transmissions2 = [encoded2]
+    transmit_and_decode(codec, data2, transmissions2)
